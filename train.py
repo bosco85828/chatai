@@ -4,6 +4,7 @@ import openai
 import os 
 import shutil
 import time
+from tgbot import send_msg 
 
 load_dotenv()
 path=os.getcwd()
@@ -16,9 +17,20 @@ while True :
     # "openai api fine_tunes.create -t /Users/user/Downloads/bot_data_prepared_v2.jsonl -m davinci --suffix "qq-faq-v1.1" --batch_size 32 --learning_rate_multiplier 0.05"
     cmd=['openai', 'api','fine_tunes.create', '-t',f'{path}/data2.jsonl','-m',model_name,'--suffix','qq-faq','--n_epochs','10','--learning_rate_multiplier','0.4']
     timeout_seconds=300
-    with open(f'{path}/data.jsonl') as f : 
-        data=f.readlines()
+    try:
+        with open(f'{path}/data.jsonl') as f : 
+            data=f.readlines()
+    except FileNotFoundError : 
+        time.sleep(900)
+        continue
+
+    except Exception as err : 
+        send_msg(err)
+        time.sleep(900)
+        continue
+
     if data : 
+        print(123)
         source_file = f"{path}/data.jsonl"
         destination_file = f"{path}/data2.jsonl"
         shutil.copy2(source_file, destination_file)
@@ -32,6 +44,7 @@ while True :
 
             result=stdout.decode().split('\n')
             print(result)
+            send_msg(result)
             # 檢查程序是否成功執行
             if process.returncode != 0:
                 raise subprocess.CalledProcessError(process.returncode, cmd, stdout, stderr)
