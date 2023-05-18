@@ -10,11 +10,21 @@ def push_prompts():
     except Exception as err  : 
         print(err)
         return jsonify({'status':'fail','message':'Please provide the prompts.'}) , 400
-    
+
     if not data : 
         return jsonify({'status':'fail','message':'Please provide the prompts.'}) , 400
+
+    try : 
+        prompts=data['prompts']
+        for prompt in prompts : 
+                prompt['prompt'] = prompt['prompt'] + " ->"
+                prompt['completion'] = f" {prompt['completion']} END"
+
+    except TypeError : 
+        return jsonify({'status':'fail','message':'Please provide prompts with json type.'}) , 400
     
-    prompts=data['prompts']
+    except Exception as err :
+        return jsonify({'status':'fail','message':err}) , 400
 
     try : 
         with jsonlines.open('data.jsonl', mode='a') as writer:
@@ -23,7 +33,7 @@ def push_prompts():
         return jsonify({'status':'success','message':''}) , 200
     
     except Exception as err : 
-        return err , 500     
+        return jsonify({'status':'fail','message':err}) , 500     
 
     
     
