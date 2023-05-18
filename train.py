@@ -5,22 +5,23 @@ import os
 import shutil
 
 load_dotenv()
+path=os.getcwd()
 OPENAI_API_KEY=os.getenv('OPENAI_API_KEY')
 openai.api_key = "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"
 
 models = openai.Model.list()
 sorted_models = sorted(models['data'], key=lambda x: int(x['created']))
-model_name=sorted_models['data'][-1]['id']
+model_name=sorted_models[-1]['id']
 # "openai api fine_tunes.create -t /Users/user/Downloads/bot_data_prepared_v2.jsonl -m davinci --suffix "qq-faq-v1.1" --batch_size 32 --learning_rate_multiplier 0.05"
-cmd=['openai', 'api','fine_tunes.create', '-t','/Users/user/Desktop/script/chatai/data2.jsonl','-m',model_name,'--suffix','qq-faq','--n_epochs','10','--learning_rate_multiplier','0.4']
+cmd=['openai', 'api','fine_tunes.create', '-t',f'{path}/data2.jsonl','-m',model_name,'--suffix','qq-faq','--n_epochs','10','--learning_rate_multiplier','0.4']
 timeout_seconds=300
-with open('data.jsonl') as f : 
+with open(f'{path}/data.jsonl') as f : 
     data=f.readlines()
 if data : 
-    source_file = "/Users/user/Desktop/script/chatai/data.jsonl"
-    destination_file = "/Users/user/Desktop/script/chatai/data2.jsonl"
+    source_file = f"{path}/data.jsonl"
+    destination_file = f"{path}/data2.jsonl"
     shutil.copy2(source_file, destination_file)
-    with open('data.jsonl','w') as f : pass 
+    with open(f'{path}/data.jsonl','w') as f : pass 
 
     try:    
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)

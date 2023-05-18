@@ -11,6 +11,9 @@ def push_prompts():
         print(err)
         return jsonify({'status':'fail','message':'Please provide the prompts.'}) , 400
     
+    if not data : 
+        return jsonify({'status':'fail','message':'Please provide the prompts.'}) , 400
+    
     prompts=data['prompts']
 
     try : 
