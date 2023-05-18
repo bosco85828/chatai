@@ -3,3 +3,4 @@ cdnw_ssl.sh
 .env
 **/__pycache__/
 *.jsonl
+nohup.out
