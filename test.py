@@ -24,6 +24,7 @@ embeddings = OpenAIEmbeddings()
 text_splitter = CharacterTextSplitter(chunk_size=500, chunk_overlap=0)
 # 切割加载的 document
 split_docs = text_splitter.split_documents(documents)
+print(split_docs)
 
 index_name="bill-test"
 # 持久化数据
@@ -32,7 +33,7 @@ docsearch = Pinecone.from_texts([t.page_content for t in split_docs], embeddings
 # 加载数据
 docsearch = Pinecone.from_existing_index(index_name,embeddings)
 
-query = "科大讯飞今年第一季度收入是多少？"
+query = "我是誰？"
 # docs = docsearch.similarity_search(query, include_metadata=True)
 docs = docsearch.similarity_search(query)
 

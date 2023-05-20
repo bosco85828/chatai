@@ -16,18 +16,20 @@ while True :
         with open(f'{path}/data.jsonl') as f : 
             data=f.readlines()
     except FileNotFoundError : 
-        time.sleep(3600)
+        time.sleep(30)
         continue
 
     except Exception as err : 
         send_msg(err)
-        time.sleep(3600)
+        time.sleep(30)
         continue
 
     if data : 
+        print(444444)
         models = openai.Model.list()
         sorted_models = sorted(models['data'], key=lambda x: int(x['created']))
         if model_name != sorted_models[-1]['id'] : 
+            print(555555)
             model_name=sorted_models[-1]['id']
             source_file = f"{path}/data.jsonl"
             destination_file = f"{path}/data2.jsonl"
@@ -69,4 +71,5 @@ while True :
                 # 其他錯誤處理
                 print(f"Error: {str(e)}")
 
-    time.sleep(3600)            
+    print(3333333)
+    time.sleep(30)            
