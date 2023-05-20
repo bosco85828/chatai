@@ -1,7 +1,8 @@
 from flask import Flask, render_template, request, jsonify
 import json
 import jsonlines
-from query import generate_text
+from query import generate_text,load_dotenv
+import codecs
 
 app = Flask(__name__)
 
@@ -49,6 +50,7 @@ def query():
     try:
         prompt=data['prompt']
         anser=generate_text(prompt)
+        print(anser)
         return jsonify({'status':'success','message': anser }) , 200
     
     except KeyError:

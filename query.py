@@ -32,6 +32,7 @@ def get_from_db(question):
     # Now we can load the persisted database from disk, and use it as normal. 
     docsearch = Chroma(persist_directory=f"{path}/vector_store", embedding_function=embeddings)
     docs = docsearch.similarity_search(question,k=1)
+    print(docs[0].page_content.strip().replace('\n',''))
     return docs[0].page_content.strip().replace('\n','')
 
 
@@ -54,5 +55,6 @@ def generate_text(prompt):
 
     return response['choices'][0]['message']['content']
 if __name__ == "__main__":
+    # load_from_txt()
     print(generate_text(sys.argv[1]))
 
