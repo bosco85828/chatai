@@ -1,11 +1,13 @@
 from flask import Flask, render_template, request, jsonify
 import json
 import jsonlines
-from query import generate_text,load_dotenv
-import codecs
+from query import generate_text,load_from_txt
+import os 
+from datetime import datetime
+
 
 app = Flask(__name__)
-
+path= os.getcwd()
 @app.route("/pushprompts",methods=['POST'])
 def push_prompts():
     try:data=request.get_json()
@@ -17,25 +19,38 @@ def push_prompts():
         return jsonify({'status':'fail','message':'Please provide the prompts.'}) , 400
 
     try : 
+        file_list=[]
         prompts=data['prompts']
         for prompt in prompts : 
-                prompt['prompt'] = prompt['prompt'] + " ->"
-                prompt['completion'] = f" {prompt['completion']} END"
+                now=datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
+                try : 
+                    with open(f"{path}/{now}.txt",'a+') as f : 
+                        f.write(prompt['prompt'] + '\n')
+                        f.write(prompt['completion'] + '\n')
 
-    except TypeError : 
+                    file_list.append(f"{path}/{now}.txt")
+                except Exception as err : 
+                    print(err)
+
+    except TypeError as err :
+        print(err) 
         return jsonify({'status':'fail','message':'Please provide prompts with json type.'}) , 400
     
     except Exception as err :
         return jsonify({'status':'fail','message':err}) , 400
 
     try : 
-        with jsonlines.open('data.jsonl', mode='a') as writer:
-            writer.write_all(prompts)
-
-        return jsonify({'status':'success','message':''}) , 200
+        load_from_txt()
+        return jsonify({'status':'success','message':""}) , 200
     
     except Exception as err : 
-        return jsonify({'status':'fail','message':err}) , 500     
+        print(err)
+        return jsonify({'status':'fail','message':str(err)}) , 500
+
+    finally:
+        for file in file_list: 
+            os.remove(file)
+     
 
 @app.route("/query",methods=['POST'])
 def query():
