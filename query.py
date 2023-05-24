@@ -52,8 +52,8 @@ def generate_text(prompt):
             response = openai.ChatCompletion.create(
                 model="gpt-3.5-turbo",
                 messages=[
-                    {"role": "system", "content": "你是一個遊戲客服專員，請你模仿客服溫柔的語氣，並且依照我提供的參考資料回答，不知道就說不清楚，不要亂回答，且幫我用簡體中文回覆。 "},
-                    {"role": "user", "content": prompt + "請你參考以下資訊回答,{}".format(get_from_db(prompt)) }
+                    {"role": "system", "content": "你是一个游戏客服专员，请你模仿客服温柔的语气，并且依照我提供的参考资料回答，不知道就说不清楚，不要乱回答，且帮我用简体中文回覆。 "},
+                    {"role": "user", "content": prompt + "请你参考以下资讯回答,{}".format(get_from_db(prompt)) }
                 ], 
                 # prompt=prompt,
                 max_tokens=1024,
