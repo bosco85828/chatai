@@ -4,6 +4,7 @@ import jsonlines
 from query import generate_text,load_from_txt
 import os 
 from datetime import datetime
+from tgbot import send_msg
 
 
 app = Flask(__name__)
@@ -54,7 +55,9 @@ def push_prompts():
 
 @app.route("/query",methods=['POST'])
 def query():
-    try:data=request.get_json()
+    try:
+        data=request.get_json()
+        send_msg(data)
     except Exception as err : 
         print(err)
         return jsonify({'status':'fail','message':'Please provide the prompt.'}) , 400
