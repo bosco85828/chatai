@@ -23,21 +23,18 @@ def push_prompts():
         prompts=data['prompts']
         for prompt in prompts : 
                 now=datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
-                try : 
-                    with open(f"{path}/{now}.txt",'a+') as f : 
-                        f.write(prompt['prompt'] + '\n')
-                        f.write(prompt['completion'] + '\n')
+                with open(f"{path}/{now}.txt",'a+') as f : 
+                    f.write(prompt['prompt'] + '\n')
+                    f.write(prompt['completion'] + '\n')
 
-                    file_list.append(f"{path}/{now}.txt")
-                except Exception as err : 
-                    print(err)
+                file_list.append(f"{path}/{now}.txt")
 
     except TypeError as err :
         print(err) 
         return jsonify({'status':'fail','message':'Please provide prompts with json type.'}) , 400
     
     except Exception as err :
-        return jsonify({'status':'fail','message':err}) , 400
+        return jsonify({'status':'fail','message':err}) , 500
 
     try : 
         load_from_txt()
@@ -48,8 +45,11 @@ def push_prompts():
         return jsonify({'status':'fail','message':str(err)}) , 500
 
     finally:
-        for file in file_list: 
-            os.remove(file)
+        try : 
+            for file in file_list: 
+                os.remove(file)
+        except Exception as err : 
+            pass
      
 
 @app.route("/query",methods=['POST'])

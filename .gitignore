@@ -4,3 +4,4 @@ cdnw_ssl.sh
 **/__pycache__/
 *.jsonl
 nohup.out
+**/JLB/

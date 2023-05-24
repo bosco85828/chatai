@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 from pprint import pprint
 import openai
 import sys
+from tgbot import send_msg
 
 load_dotenv()
 path=os.getcwd()
@@ -25,37 +26,53 @@ def load_from_txt():
     # 初始化 openai 的 embeddings 对象
     embeddings = OpenAIEmbeddings()
     # 持久化数据
-    docsearch = Chroma.from_documents(split_docs, embeddings, persist_directory=f"{path}/vector_store")
+    docsearch = Chroma.from_documents(split_docs, embeddings, persist_directory=f"{path}/JLB")
     docsearch.persist()
 
 def get_from_db(question):
     # Now we can load the persisted database from disk, and use it as normal. 
-    docsearch = Chroma(persist_directory=f"{path}/vector_store", embedding_function=embeddings)
-    docs = docsearch.similarity_search(question,k=1)
-    print(docs)
-    print(docs[0].page_content.strip().replace('\n',''))
-    return docs[0].page_content.strip().replace('\n','')
+    docsearch = Chroma(persist_directory=f"{path}/JLB", embedding_function=embeddings)
+    try : docs = docsearch.similarity_search(question,k=1)
+    except Exception as err : 
+        send_msg(err)
+        docs = None
+
+    if docs : 
+        print(docs)
+        print(docs[0].page_content.strip().replace('\n',''))
+        return docs[0].page_content.strip().replace('\n','')
+    
+    else : 
+        return None
 
 
 def generate_text(prompt):
-    
-    response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        messages=[
-            {"role": "system", "content": "你是一個遊戲客服專員，請你模仿客服溫柔的語氣，並且依照我提供的參考資料回答，不知道就說不清楚，不要亂回答。 "},
-            {"role": "user", "content": prompt + "請你參考以下資訊回答,{}".format(get_from_db(prompt)) }
-        ], 
-        # prompt=prompt,
-        max_tokens=1024,
-        temperature=0.1,
-        n=1,
-        stop="END",
-        timeout=15,
-        # context=context
-    )
+    while True : 
+        try : 
+            response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": "你是一個遊戲客服專員，請你模仿客服溫柔的語氣，並且依照我提供的參考資料回答，不知道就說不清楚，不要亂回答。 "},
+                    {"role": "user", "content": prompt + "請你參考以下資訊回答,{}".format(get_from_db(prompt)) }
+                ], 
+                # prompt=prompt,
+                max_tokens=1024,
+                temperature=0.1,
+                n=1,
+                stop="END",
+                timeout=30,
+                # context=context
+            )
+
+            break
+
+        except Exception as err :
+            send_msg(err)
+            continue 
 
     return response['choices'][0]['message']['content']
+
 if __name__ == "__main__":
-    load_from_txt()
+    # load_from_txt()
     print(generate_text(sys.argv[1]))
 
