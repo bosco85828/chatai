@@ -80,7 +80,7 @@ def query():
     
     except Exception as err :
         send_msg(data)
-        return jsonify({'status':'fail','message':err}) , 400
+        return jsonify({'status':'fail','message':err}) , 500
 
     
 if __name__ == '__main__':
