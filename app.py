@@ -3,12 +3,20 @@ import json
 import jsonlines
 from query import generate_text,load_from_txt
 import os 
+from dotenv import load_dotenv
 from datetime import datetime
 from tgbot import send_msg
 
+load_dotenv()
+
+key_dict={
+    'JLB':os.getenv('JLB_OPENAI_API_KEY'),
+    'ETY':os.getenv('ETY_OPENAI_API_KEY')
+}
 
 app = Flask(__name__)
 path= os.getcwd()
+
 @app.route("/pushprompts",methods=['POST'])
 def push_prompts():
     try:
@@ -23,6 +31,9 @@ def push_prompts():
         file_list=[]
         prompts=data['prompts']
         merchant=data['merchant'].upper() 
+        if merchant in key_dict : 
+            os.environ['OPENAI_API_KEY']=key_dict[merchant]
+
         try : 
             os.mkdir(f"{path}/{merchant}-rawdata")
         except FileExistsError: pass 
@@ -77,6 +88,9 @@ def query():
     try:
         prompt=data['prompt']
         merchant=data['merchant'].upper()
+        if merchant in key_dict : 
+            os.environ['OPENAI_API_KEY']=key_dict[merchant]
+            
         anser=generate_text(prompt,merchant)
         print(anser)
         return jsonify({'status':'success','message': anser }) , 200

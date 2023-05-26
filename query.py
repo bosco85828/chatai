@@ -5,15 +5,14 @@ from langchain import OpenAI,VectorDBQA
 from langchain.document_loaders import DirectoryLoader
 from langchain.chains import RetrievalQA
 import os 
-from dotenv import load_dotenv
 from pprint import pprint
 import openai
 import sys
 from tgbot import send_msg
 
-load_dotenv()
 path=os.getcwd()
 embeddings = OpenAIEmbeddings()
+
 def load_from_txt(merchant):
 
     # 加载文件夹中的所有txt类型的文件
@@ -71,7 +70,7 @@ def generate_text(prompt,merchant):
         except Exception as err :
             send_msg(err)
             continue 
-
+    print('now:' + os.getenv('OPENAI_API_KEY'))
     return response['choices'][0]['message']['content']
 
 if __name__ == "__main__":
