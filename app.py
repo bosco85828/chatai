@@ -57,7 +57,6 @@ def push_prompts():
 def query():
     try:
         data=request.get_json()
-        send_msg(data)
     except Exception as err : 
         print(err)
         return jsonify({'status':'fail','message':'Please provide the prompt.'}) , 400
@@ -72,12 +71,15 @@ def query():
         return jsonify({'status':'success','message': anser }) , 200
     
     except KeyError:
+        send_msg(data)
         return jsonify({'status':'fail','message':'Please provide prompt with json type.'}) , 400
 
-    except TypeError : 
+    except TypeError :
+        send_msg(data) 
         return jsonify({'status':'fail','message':'Please provide prompt with json type.'}) , 400
     
     except Exception as err :
+        send_msg(data)
         return jsonify({'status':'fail','message':err}) , 400
 
     

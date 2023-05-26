@@ -47,7 +47,8 @@ def get_from_db(question):
 
 
 def generate_text(prompt):
-    while True : 
+    count=0
+    while count < 2 : 
         try : 
             response = openai.ChatCompletion.create(
                 model="gpt-3.5-turbo",
@@ -60,7 +61,7 @@ def generate_text(prompt):
                 temperature=0.1,
                 n=1,
                 stop="END",
-                timeout=30,
+                timeout=60,
                 # context=context
             )
 
@@ -68,7 +69,11 @@ def generate_text(prompt):
 
         except Exception as err :
             send_msg(err)
+            count+=1 
             continue 
+    
+    else : 
+        send_msg("OpenAI api request failed, and failed to retry.")
 
     return response['choices'][0]['message']['content']
 
