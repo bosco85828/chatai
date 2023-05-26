@@ -5,3 +5,5 @@ cdnw_ssl.sh
 *.jsonl
 nohup.out
 **/JLB/
+**/ETY/
+**/*/
