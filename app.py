@@ -11,10 +11,10 @@ app = Flask(__name__)
 path= os.getcwd()
 @app.route("/pushprompts",methods=['POST'])
 def push_prompts():
-    try:data=request.get_json()
+    try:
+        data=request.get_json()
     except Exception as err  : 
-        print(err)
-        return jsonify({'status':'fail','message':'Please provide the prompts.'}) , 400
+        return jsonify({'status':'fail','message':str(err)}) , 400
 
     if not data : 
         return jsonify({'status':'fail','message':'Please provide the prompts.'}) , 400
@@ -22,27 +22,37 @@ def push_prompts():
     try : 
         file_list=[]
         prompts=data['prompts']
+        merchant=data['merchant'].upper() 
+        try : 
+            os.mkdir(f"{path}/{merchant}-rawdata")
+        except FileExistsError: pass 
+
         for prompt in prompts : 
                 now=datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
-                with open(f"{path}/{now}.txt",'a+') as f : 
+                
+                with open(f"{path}/{merchant}-rawdata/{now}.txt",'a+') as f : 
                     f.write(prompt['prompt'] + '\n')
                     f.write(prompt['completion'] + '\n')
 
-                file_list.append(f"{path}/{now}.txt")
+                
+                file_list.append(f"{path}/{merchant}-rawdata/{now}.txt")
+                
 
+    except KeyError as err :
+        return jsonify({'status':'fail','message':f'Please provide the {str(err)}'}) , 400
+    
     except TypeError as err :
         print(err) 
         return jsonify({'status':'fail','message':'Please provide prompts with json type.'}) , 400
     
     except Exception as err :
-        return jsonify({'status':'fail','message':err}) , 500
+        return jsonify({'status':'fail','message':str(err)}) , 500
 
-    try : 
-        load_from_txt()
+    try :
+        load_from_txt(merchant)
         return jsonify({'status':'success','message':""}) , 200
-    
+
     except Exception as err : 
-        print(err)
         return jsonify({'status':'fail','message':str(err)}) , 500
 
     finally:
@@ -57,9 +67,8 @@ def push_prompts():
 def query():
     try:
         data=request.get_json()
-        send_msg(data)
+
     except Exception as err : 
-        print(err)
         return jsonify({'status':'fail','message':'Please provide the prompt.'}) , 400
     
     if not data : 
@@ -67,18 +76,19 @@ def query():
     
     try:
         prompt=data['prompt']
-        anser=generate_text(prompt)
+        merchant=data['merchant'].upper()
+        anser=generate_text(prompt,merchant)
         print(anser)
         return jsonify({'status':'success','message': anser }) , 200
     
-    except KeyError:
-        return jsonify({'status':'fail','message':'Please provide prompt with json type.'}) , 400
+    except KeyError as err :
+        return jsonify({'status':'fail','message':f'Please provide the {str(err)}'}) , 400
 
-    except TypeError : 
-        return jsonify({'status':'fail','message':'Please provide prompt with json type.'}) , 400
+    except TypeError as err : 
+        return jsonify({'status':'fail','message':str(err)}) , 400
     
     except Exception as err :
-        return jsonify({'status':'fail','message':err}) , 400
+        return jsonify({'status':'fail','message':str(err)}) , 400
 
     
 if __name__ == '__main__':
