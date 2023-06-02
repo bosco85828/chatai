@@ -4,31 +4,72 @@ from langchain.text_splitter import CharacterTextSplitter
 from langchain import OpenAI,VectorDBQA
 from langchain.document_loaders import DirectoryLoader
 from langchain.chains import RetrievalQA
+from langchain.docstore.document import Document
 import os 
 from pprint import pprint
 import openai
 import sys
 from tgbot import send_msg
+from sqldb import insert_info , get_maxid ,change_info
 
 path=os.getcwd()
 embeddings = OpenAIEmbeddings()
 
-def load_from_txt(merchant):
+def load_from_txt(merchant,prompt,completion):
+
 
     # 加载文件夹中的所有txt类型的文件
-    loader = DirectoryLoader(f"{path}/{merchant}-rawdata/", glob='*.txt')
+    # loader = DirectoryLoader(f"{path}/{merchant}-rawdata/", glob='*.txt')
 
     # # 将数据转成 document 对象，每个文件会作为一个 document
-    documents = loader.load()
-    # 初始化加载器
-    text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
-    # 切割加载的 document
-    split_docs = text_splitter.split_documents(documents)
+    # documents = loader.load()
+
+    # # 初始化加载器
+    # text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
+    # # 切割加载的 document
+    # split_docs = text_splitter.split_documents(documents)
+
+    
+    _id= int(get_maxid(f"{merchant}_train")) + 1 
+
+    data=prompt + '\n' + completion
+
+    original_doc = Document(page_content=data)
     # 初始化 openai 的 embeddings 对象
     embeddings = OpenAIEmbeddings()
     # 持久化数据
-    docsearch = Chroma.from_documents(split_docs, embeddings, persist_directory=f"{path}/{merchant}")
+    docsearch = Chroma.from_documents([original_doc], embeddings,ids=[str(_id)], persist_directory=f"{path}/{merchant}")
     docsearch.persist()
+    insert_info(f"{merchant}_train",prompt,completion)
+
+def change_data(merchant,prompt,completion,_id):
+    # # 加载文件夹中的所有txt类型的文件
+    # loader = DirectoryLoader(f"{path}/{merchant}-rawdata/", glob='*.txt')
+
+    # # # 将数据转成 document 对象，每个文件会作为一个 document
+    # documents = loader.load()
+    # # 初始化加载器
+    # text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
+    # # 切割加载的 document
+    # split_docs = text_splitter.split_documents(documents)
+
+    # 初始化 openai 的 embeddings 对象
+    try : 
+        data=prompt + '\n' + completion
+        original_doc = Document(page_content=data)
+        embeddings = OpenAIEmbeddings()
+        docsearch = Chroma(persist_directory=f"{path}/{merchant}", embedding_function=embeddings)
+        
+        docsearch.update_document(document_id=_id, document=original_doc)
+        docsearch.persist()
+        change_info(f"{merchant}_train",prompt,completion,_id)
+
+    
+    except Exception as err : 
+        print(err)
+
+
+
 
 def get_from_db(question,merchant):
     # Now we can load the persisted database from disk, and use it as normal. 
@@ -74,6 +115,8 @@ def generate_text(prompt,merchant):
     return response['choices'][0]['message']['content']
 
 if __name__ == "__main__":
-    # load_from_txt()
-    print(generate_text(sys.argv[1]))
+    # load_from_txt('JLB','明天早餐要吃什麼','還不知道')
+    print(generate_text('明天早餐','JLB'))
+    # print(change_data('JLB','明天早餐要吃什麼','吃西餐','10'))
+    # print(generate_text('晚餐要吃什麼','JLB'))
 

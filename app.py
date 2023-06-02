@@ -6,7 +6,7 @@ import os
 from dotenv import load_dotenv
 from datetime import datetime
 from tgbot import send_msg
-
+from sqldb import insert_info
 load_dotenv()
 
 key_dict={
@@ -38,7 +38,9 @@ def push_prompts():
             os.mkdir(f"{path}/{merchant}-rawdata")
         except FileExistsError: pass 
 
+        _count=len(prompts)
         for prompt in prompts : 
+                insert_info(f"{merchant}_train",prompt['prompt'],prompt['completion'])
                 now=datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
                 
                 with open(f"{path}/{merchant}-rawdata/{now}.txt",'a+') as f : 
@@ -60,7 +62,7 @@ def push_prompts():
         return jsonify({'status':'fail','message':str(err)}) , 500
 
     try :
-        load_from_txt(merchant)
+        load_from_txt(merchant,_count)
         return jsonify({'status':'success','message':""}) , 200
 
     except Exception as err : 
