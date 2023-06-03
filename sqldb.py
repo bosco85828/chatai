@@ -66,7 +66,7 @@ def get_maxid(table_name):
 
         if result : 
             count=result[0]
-            print(count)
+            # print(count)
             return count
 
         else : 

@@ -28,28 +28,29 @@ def push_prompts():
         return jsonify({'status':'fail','message':'Please provide the prompts.'}) , 400
 
     try : 
-        file_list=[]
+        # file_list=[]
         prompts=data['prompts']
         merchant=data['merchant'].upper() 
         if merchant in key_dict : 
             os.environ['OPENAI_API_KEY']=key_dict[merchant]
 
-        try : 
-            os.mkdir(f"{path}/{merchant}-rawdata")
-        except FileExistsError: pass 
+        # try : 
+        #     os.mkdir(f"{path}/{merchant}-rawdata")
+        # except FileExistsError: pass 
 
-        _count=len(prompts)
+        # _count=len(prompts)
         for prompt in prompts : 
-                insert_info(f"{merchant}_train",prompt['prompt'],prompt['completion'])
-                now=datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
+                load_from_txt(merchant,prompt=prompt['prompt'],completion=prompt['completion'])
                 
-                with open(f"{path}/{merchant}-rawdata/{now}.txt",'a+') as f : 
-                    f.write(prompt['prompt'] + '\n')
-                    f.write(prompt['completion'] + '\n')
+                # now=datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
+                
+                # with open(f"{path}/{merchant}-rawdata/{now}.txt",'a+') as f : 
+                #     f.write(prompt['prompt'] + '\n')
+                #     f.write(prompt['completion'] + '\n')
 
                 
-                file_list.append(f"{path}/{merchant}-rawdata/{now}.txt")
-                
+                # file_list.append(f"{path}/{merchant}-rawdata/{now}.txt")
+        else : return jsonify({'status':'success','message':""}) , 200
 
     except KeyError as err :
         return jsonify({'status':'fail','message':f'Please provide the {str(err)}'}) , 400
@@ -61,19 +62,19 @@ def push_prompts():
     except Exception as err :
         return jsonify({'status':'fail','message':str(err)}) , 500
 
-    try :
-        load_from_txt(merchant,_count)
-        return jsonify({'status':'success','message':""}) , 200
+    # try :
+    #     load_from_txt(merchant,_count)
+    #     return jsonify({'status':'success','message':""}) , 200
 
-    except Exception as err : 
-        return jsonify({'status':'fail','message':str(err)}) , 500
+    # except Exception as err : 
+    #     return jsonify({'status':'fail','message':str(err)}) , 500
 
-    finally:
-        try : 
-            for file in file_list: 
-                os.remove(file)
-        except Exception as err : 
-            pass
+    # finally:
+    #     try : 
+    #         for file in file_list: 
+    #             os.remove(file)
+    #     except Exception as err : 
+    #         pass
      
 
 @app.route("/query",methods=['POST'])

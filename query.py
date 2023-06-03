@@ -30,15 +30,24 @@ def load_from_txt(merchant,prompt,completion):
     # split_docs = text_splitter.split_documents(documents)
 
     
-    _id= int(get_maxid(f"{merchant}_train")) + 1 
-
+    try : 
+        _id= int(get_maxid(f"{merchant}_train")) + 1 
+    except TypeError : 
+        _id=1 
+    print(_id)
     data=prompt + '\n' + completion
 
     original_doc = Document(page_content=data)
     # 初始化 openai 的 embeddings 对象
     embeddings = OpenAIEmbeddings()
     # 持久化数据
-    docsearch = Chroma.from_documents([original_doc], embeddings,ids=[str(_id)], persist_directory=f"{path}/{merchant}")
+    docsearch = Chroma.from_documents(
+        documents=[original_doc], 
+        embedding=embeddings,
+        ids=[str(_id)], 
+        persist_directory=f"{path}/{merchant}"
+        )
+    
     docsearch.persist()
     insert_info(f"{merchant}_train",prompt,completion)
 
@@ -60,7 +69,7 @@ def change_data(merchant,prompt,completion,_id):
         embeddings = OpenAIEmbeddings()
         docsearch = Chroma(persist_directory=f"{path}/{merchant}", embedding_function=embeddings)
         
-        docsearch.update_document(document_id=_id, document=original_doc)
+        docsearch.update_document(document_id=str(_id), document=original_doc)
         docsearch.persist()
         change_info(f"{merchant}_train",prompt,completion,_id)
 
@@ -115,8 +124,8 @@ def generate_text(prompt,merchant):
     return response['choices'][0]['message']['content']
 
 if __name__ == "__main__":
-    # load_from_txt('JLB','明天早餐要吃什麼','還不知道')
-    print(generate_text('明天早餐','JLB'))
-    # print(change_data('JLB','明天早餐要吃什麼','吃西餐','10'))
+    # load_from_txt('TEST2','明天早餐要吃什麼','還不知道')
+    print(generate_text('打球','TEST2'))
+    # print(change_data('TEST2','今天去哪打球','三民公園','9'))
     # print(generate_text('晚餐要吃什麼','JLB'))
 
