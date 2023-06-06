@@ -34,7 +34,6 @@ def load_from_txt(merchant,prompt,completion):
     docsearch = Chroma.from_documents(
         documents=[original_doc], 
         embedding=embeddings,
-        ids=["doc_{}".format(_id)], 
         persist_directory=f"{path}/{merchant}"
         )
     
@@ -43,6 +42,22 @@ def load_from_txt(merchant,prompt,completion):
     try : insert_info(f"{merchant}_train",prompt,completion)
     except Exception as err : 
         print({'insert':err}) 
+
+def load_from_dir(merchant,_id):
+    # 加载文件夹中的所有txt类型的文件
+    loader = DirectoryLoader(f"{path}/{merchant}-rawdata/", glob='*.txt')
+
+    # # 将数据转成 document 对象，每个文件会作为一个 document
+    documents = loader.load()
+    # 初始化加载器
+    text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
+    # 切割加载的 document
+    split_docs = text_splitter.split_documents(documents)
+    # 初始化 openai 的 embeddings 对象
+    embeddings = OpenAIEmbeddings()
+    # 持久化数据
+    docsearch = Chroma.from_documents(split_docs, embeddings,ids=["doc_{}".format(_id)],  persist_directory=f"{path}/{merchant}")
+    docsearch.persist()
 
 def change_data(merchant,prompt,completion,_id):
     try : 
@@ -53,7 +68,7 @@ def change_data(merchant,prompt,completion,_id):
         
         docsearch.update_document(document_id="doc_{}".format(_id), document=original_doc)
         docsearch.persist()
-        change_info(f"{merchant}_train",prompt,completion,_id)
+        # change_info(f"{merchant}_train",prompt,completion,_id)
 
     
     except Exception as err : 
@@ -103,11 +118,15 @@ def generate_text(prompt,merchant):
             send_msg(err)
             continue 
     print('now:' + os.getenv('OPENAI_API_KEY'))
+    print(response)
     return response['choices'][0]['message']['content']
 
 if __name__ == "__main__":
     # load_from_txt('TEST2','明天早餐要吃什麼','還不知道')
     # print(generate_text('打球','TEST2'))
-    print(change_data('TEST_4','3天後天氣如何','陰天','14'))
+    # print(change_data('TEST_4','3天後天氣如何','陰天','14'))
     # print(generate_text('晚餐要吃什麼','JLB'))
+    # load_from_dir('TEST_5','test1')
+    print(change_data('TEST_5','20天後的天氣如何','陰天','test1'))
+
 
