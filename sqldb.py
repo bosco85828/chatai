@@ -3,27 +3,32 @@ from dotenv import load_dotenv
 import os 
 
 load_dotenv()
-SQL_PASSWORD=os.getenv('SQL_PASSWORD')
+SQL_PASSWORD=os.getenv('SQL_PASSWORD_2')
+SQL_DOMAIN=os.getenv('SQL_DOMAIN')
 print(SQL_PASSWORD)
+
+
 def insert_info(table_name,prompt,completion):
-    # 建立與 MySQL 伺服器的連接
     connection = pymysql.connect(
-        host='127.0.0.1',
+        host=SQL_DOMAIN,
         user='root',
         password=SQL_PASSWORD,
-        database='chatai'
+        database='chatai',
+        charset='utf8mb4'
     )
 
-    # 創建 cursor 對象
-    cursor = connection.cursor()
+    # # 創建 cursor 對象
+    # cursor = connection.cursor()
 
-    # 定義插入資料的 SQL 語句
-    sql = f"INSERT INTO {table_name} (prompt, completion) VALUES ('{prompt}', '{completion}')"
+    # # 定義插入資料的 SQL 語句
+    # sql = f"INSERT INTO {table_name} (prompt, completion) VALUES ('{prompt}', '{completion}')"
 
     # 插入的資料值
     # data = ('Hello', 'World')
     while True : 
         try:
+            cursor = connection.cursor()
+            sql = f"INSERT INTO {table_name} (prompt, completion) VALUES ('{prompt}', '{completion}')"
             # 執行 SQL 語句並插入資料
             cursor.execute(sql)
 
@@ -34,17 +39,19 @@ def insert_info(table_name,prompt,completion):
             break
 
         except Exception as e:
-
-            if "doesn't exist" in str(e) : 
-                sql_2 = f"CREATE TABLE {table_name} (   id INT AUTO_INCREMENT PRIMARY KEY,   prompt LONGTEXT,   completion LONGTEXT,   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP )"
-                cursor.execute(sql_2)
-                connection.commit()
-                print(f"{table_name} 不存在，已創建該表。")
-                continue
+            # print('test123')
+            # if "doesn't exist" in str(e) : 
+            #     sql_2 = f"CREATE TABLE {table_name} (   id INT AUTO_INCREMENT PRIMARY KEY,   prompt LONGTEXT,   completion LONGTEXT,   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP )"
+            #     cursor.execute(sql_2)
+            #     connection.commit()
+            #     print(f"{table_name} 不存在，已創建該表。")
+            #     continue
 
             # 發生錯誤時回滾事務
-            connection.rollback()
+            # connection.rollback()
             print("資料插入失敗：", str(e)) 
+            cursor.close()
+            connection.close()
             break
     
     # 關閉 cursor 和連接
@@ -53,10 +60,11 @@ def insert_info(table_name,prompt,completion):
 
 def get_maxid(table_name):
     connection = pymysql.connect(
-        host='127.0.0.1',
+        host=SQL_DOMAIN,
         user='root',
         password=SQL_PASSWORD,
-        database='chatai'
+        database='chatai',
+        charset='utf8mb4'
     )
     try : 
         cursor = connection.cursor()
@@ -73,7 +81,18 @@ def get_maxid(table_name):
             print("表格中沒有資料")
 
     except Exception as err : 
+        print(type(err.args))
+        
+        error_code,error_msg=err.args
+        print(error_code)
         print("查詢資料時發生錯誤：", str(err))
+        if str(error_code) == "1146" : 
+            sql_2 = f"CREATE TABLE {table_name} (   id INT AUTO_INCREMENT PRIMARY KEY,   prompt LONGTEXT,   completion LONGTEXT,   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP )"
+            cursor.execute(sql_2)
+            connection.commit()
+            print(f"{table_name} 不存在，已創建該表。")
+
+        
 
     finally:
         cursor.close()
@@ -81,12 +100,12 @@ def get_maxid(table_name):
 
 
 def search_id(table_name,prompt):
-    # 建立與 MySQL 伺服器的連接
     connection = pymysql.connect(
-        host='127.0.0.1',
+        host=SQL_DOMAIN,
         user='root',
         password=SQL_PASSWORD,
-        database='chatai'
+        database='chatai',
+        charset='utf8mb4'
     )
 
     try : 
@@ -115,12 +134,12 @@ def search_id(table_name,prompt):
 
 def change_info(table_name,prompt,completion,_id):
     connection = pymysql.connect(
-        host='127.0.0.1',
+        host=SQL_DOMAIN,
         user='root',
         password=SQL_PASSWORD,
-        database='chatai'
+        database='chatai',
+        charset='utf8mb4'
     )
-
     try : 
         # 創建 cursor 對象
         cursor = connection.cursor()
@@ -140,7 +159,7 @@ def change_info(table_name,prompt,completion,_id):
         connection.close()
 
 if __name__ == "__main__":
-    change_info('JLB_train','這是修改過後的','修改的id3','3')
-# insert_info('Bosco_train','晚餐吃什麼','還沒想好')
+    change_info('TEST22_train','後天去哪','JCpark','3')
+    # insert_info('Bosco_train','晚餐吃什麼','還沒想好')
 # search_id("JLB_train",'.*是誰.*')
-    # get_maxid("JLB_train")
+    # print(get_maxid("TEST20_train"))
