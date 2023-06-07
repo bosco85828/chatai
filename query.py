@@ -10,7 +10,7 @@ from pprint import pprint
 import openai
 import sys
 from tgbot import send_msg
-from sqldb import insert_info , get_maxid ,change_info
+from sqldb import insert_info , get_maxid ,change_info , insert_token 
 
 path=os.getcwd()
 embeddings = OpenAIEmbeddings()
@@ -41,7 +41,7 @@ def load_from_txt(merchant,prompt,completion):
 
     try : insert_info(f"{merchant}_train",prompt,completion)
     except Exception as err : 
-        print({'insert':err}) 
+        send_msg({'insert_info':err})
 
 def load_from_dir(merchant,_id):
     # 加载文件夹中的所有txt类型的文件
@@ -82,7 +82,7 @@ def get_from_db(question,merchant):
     docsearch = Chroma(persist_directory=f"{path}/{merchant}", embedding_function=embeddings)
     try : docs = docsearch.similarity_search(question,k=1)
     except Exception as err : 
-        send_msg(err)
+        send_msg({"get_from_db":err})
         docs = None
 
     if docs : 
@@ -118,7 +118,10 @@ def generate_text(prompt,merchant):
             send_msg(err)
             continue 
     print('now:' + os.getenv('OPENAI_API_KEY'))
-    print(response)
+    try : insert_token(f"{merchant}_token",response['usage']['total_tokens'])
+    except Exception as err : 
+        send_msg({"insert_token":err})
+
     return response['choices'][0]['message']['content']
 
 if __name__ == "__main__":
