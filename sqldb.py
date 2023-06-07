@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 import os 
 from tgbot import send_msg 
 load_dotenv()
-SQL_PASSWORD=os.getenv('SQL_PASSWORD_2')
+SQL_PASSWORD=os.getenv('SQL_PASSWORD')
 SQL_DOMAIN=os.getenv('SQL_DOMAIN')
 print(SQL_PASSWORD)
 
