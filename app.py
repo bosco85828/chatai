@@ -11,7 +11,8 @@ load_dotenv()
 
 key_dict={
     'JLB':os.getenv('JLB_OPENAI_API_KEY'),
-    'ETY':os.getenv('ETY_OPENAI_API_KEY')
+    'ETY':os.getenv('ETY_OPENAI_API_KEY'),
+    'YZ':os.getenv('YZ_OPENAI_API_KEY')
 }
 
 app = Flask(__name__)
