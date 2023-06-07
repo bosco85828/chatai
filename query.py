@@ -118,7 +118,7 @@ def generate_text(prompt,merchant):
             send_msg(err)
             continue 
     print('now:' + os.getenv('OPENAI_API_KEY'))
-    try : insert_token(f"{merchant}_token",response['usage']['total_tokens'])
+    try : insert_token(f"{merchant}_token",response['usage']['total_tokens'],prompt)
     except Exception as err : 
         send_msg({"insert_token":err})
 
@@ -130,6 +130,7 @@ if __name__ == "__main__":
     # print(change_data('TEST_4','3天後天氣如何','陰天','14'))
     # print(generate_text('晚餐要吃什麼','JLB'))
     # load_from_dir('TEST_5','test1')
-    print(change_data('TEST_5','20天後的天氣如何','陰天','test1'))
+    # print(change_data('TEST_5','20天後的天氣如何','陰天','test1'))
+    pass
 
 

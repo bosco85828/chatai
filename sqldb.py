@@ -59,7 +59,7 @@ def insert_info(table_name,prompt,completion):
     cursor.close()
     connection.close()
 
-def insert_token(table_name,token):
+def insert_token(table_name,token,prompt):
     connection = pymysql.connect(
         host=SQL_DOMAIN,
         user='root',
@@ -70,7 +70,7 @@ def insert_token(table_name,token):
     while True : 
         try : 
             cursor = connection.cursor()
-            sql = f"INSERT INTO {table_name} (token_count) VALUES ({token})"
+            sql = f"INSERT INTO {table_name} (prompt,token_count) VALUES ('{prompt}',{token})"
             cursor.execute(sql)
             connection.commit()
             print("資料插入成功！")
@@ -80,7 +80,7 @@ def insert_token(table_name,token):
             # print(err)
             err_code,err_msg = err.args 
             if str(err_code) == "1146" : 
-                sql_2 = f"CREATE TABLE {table_name} (   id INT AUTO_INCREMENT PRIMARY KEY,   token_count int,  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)"
+                sql_2 = f"CREATE TABLE {table_name} (id INT AUTO_INCREMENT PRIMARY KEY, prompt LONGTEXT ,   token_count int,  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)"
                 cursor.execute(sql_2)
                 connection.commit()
                 print(f"{table_name} 不存在，已創建該表。")
@@ -202,9 +202,27 @@ def change_info(table_name,prompt,completion,_id):
         cursor.close()
         connection.close()
 
+
+def get_total_token(table_name):
+    connection = pymysql.connect(
+        host=SQL_DOMAIN,
+        user='root',
+        password=SQL_PASSWORD,
+        database='chatai',
+        charset='utf8mb4'
+    )
+    cursor = connection.cursor()
+    sql=f"select sum(token_count) as total_token from {table_name} "
+    cursor.execute(sql)
+    result=cursor.fetchone()
+    if result : 
+        print(result[0])
+
+
 if __name__ == "__main__":
     # change_info('TEST22_train','後天去哪','JCpark','3')
     # insert_info('Bosco_train','晚餐吃什麼','還沒想好')
 # search_id("JLB_train",'.*是誰.*')
     # print(get_maxid("TEST20_train"))
-    print(insert_token('test123',333))
+    # print(insert_token('test123',333))
+    pass
