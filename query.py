@@ -118,7 +118,7 @@ def generate_text(prompt,merchant):
             send_msg(err)
             continue 
     print('now:' + os.getenv('OPENAI_API_KEY'))
-    try : insert_token(f"{merchant}_token",response['usage']['total_tokens'],prompt)
+    try : insert_token(f"{merchant}_token",response['usage']['total_tokens'],prompt,response['choices'][0]['message']['content'])
     except Exception as err : 
         send_msg({"insert_token":err})
 

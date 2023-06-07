@@ -59,7 +59,7 @@ def insert_info(table_name,prompt,completion):
     cursor.close()
     connection.close()
 
-def insert_token(table_name,token,prompt):
+def insert_token(table_name,token,prompt,completion):
     connection = pymysql.connect(
         host=SQL_DOMAIN,
         user='root',
@@ -70,7 +70,7 @@ def insert_token(table_name,token,prompt):
     while True : 
         try : 
             cursor = connection.cursor()
-            sql = f"INSERT INTO {table_name} (prompt,token_count) VALUES ('{prompt}',{token})"
+            sql = f"INSERT INTO {table_name} (prompt,completion,token_count) VALUES ('{prompt}','{completion}',{token})"
             cursor.execute(sql)
             connection.commit()
             print("資料插入成功！")
@@ -80,7 +80,7 @@ def insert_token(table_name,token,prompt):
             # print(err)
             err_code,err_msg = err.args 
             if str(err_code) == "1146" : 
-                sql_2 = f"CREATE TABLE {table_name} (id INT AUTO_INCREMENT PRIMARY KEY, prompt LONGTEXT ,   token_count int,  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)"
+                sql_2 = f"CREATE TABLE {table_name} (id INT AUTO_INCREMENT PRIMARY KEY, prompt LONGTEXT , completion LONGTEXT ,   token_count int,  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)"
                 cursor.execute(sql_2)
                 connection.commit()
                 print(f"{table_name} 不存在，已創建該表。")
