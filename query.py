@@ -78,13 +78,20 @@ def change_data(merchant,prompt,completion,_id):
 
 
 def get_from_db(question,merchant):
-    # Now we can load the persisted database from disk, and use it as normal. 
-    docsearch = Chroma(persist_directory=f"{path}/{merchant}", embedding_function=embeddings)
-    try : docs = docsearch.similarity_search(question,k=1)
-    except Exception as err : 
-        send_msg({"get_from_db":err})
-        docs = None
 
+    if os.path.exists(f"{path}/{merchant}") : 
+        # print('exist')
+        # Now we can load the persisted database from disk, and use it as normal. 
+        docsearch = Chroma(persist_directory=f"{path}/{merchant}", embedding_function=embeddings)
+        try : docs = docsearch.similarity_search(question,k=1)
+        except Exception as err : 
+            send_msg({"get_from_db":err})
+            docs = None
+
+    else : 
+        # print('not exist')
+        docs = None 
+    
     if docs : 
         print(docs)
         print(docs[0].page_content.strip().replace('\n',''))
@@ -126,7 +133,7 @@ def generate_text(prompt,merchant):
 
 if __name__ == "__main__":
     # load_from_txt('TEST2','明天早餐要吃什麼','還不知道')
-    # print(generate_text('打球','TEST2'))
+    print(generate_text('打球','djsaijdapsjd'))
     # print(change_data('TEST_4','3天後天氣如何','陰天','14'))
     # print(generate_text('晚餐要吃什麼','JLB'))
     # load_from_dir('TEST_5','test1')
