@@ -43,7 +43,7 @@ def load_from_txt(merchant,prompt,completion):
     except Exception as err : 
         send_msg({'insert_info':err})
 
-def load_from_dir(merchant,_id):
+def load_from_dir_id(merchant,_id):
     # 加载文件夹中的所有txt类型的文件
     loader = DirectoryLoader(f"{path}/{merchant}-rawdata/", glob='*.txt')
 
@@ -56,7 +56,27 @@ def load_from_dir(merchant,_id):
     # 初始化 openai 的 embeddings 对象
     embeddings = OpenAIEmbeddings()
     # 持久化数据
-    docsearch = Chroma.from_documents(split_docs, embeddings,ids=["doc_{}".format(_id)],  persist_directory=f"{path}/{merchant}")
+    num=[ f"doc_{_id}_{i}" for i in range(len(split_docs))] 
+
+    # docsearch = Chroma.from_documents([split_docs], embeddings,ids=["doc_{}_{}".format(_id,num)],  persist_directory=f"{path}/{merchant}")
+    docsearch = Chroma.from_documents(split_docs, embeddings,ids=num,  persist_directory=f"{path}/{merchant}")
+    docsearch.persist()
+    
+
+def load_from_dir(merchant):
+    # 加载文件夹中的所有txt类型的文件
+    loader = DirectoryLoader(f"{path}/{merchant}-rawdata/", glob='*.txt')
+
+    # # 将数据转成 document 对象，每个文件会作为一个 document
+    documents = loader.load()
+    # 初始化加载器
+    text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
+    # 切割加载的 document
+    split_docs = text_splitter.split_documents(documents)
+    # 初始化 openai 的 embeddings 对象
+    embeddings = OpenAIEmbeddings()
+    # 持久化数据
+    docsearch = Chroma.from_documents(split_docs, embeddings,  persist_directory=f"{path}/{merchant}")
     docsearch.persist()
 
 def change_data(merchant,prompt,completion,_id):
@@ -132,9 +152,10 @@ def generate_text(prompt,merchant):
     return response['choices'][0]['message']['content']
 
 if __name__ == "__main__":
+    # load_from_dir_id('JLB_seasonal','seasonal')
     # load_from_txt('TEST2','明天早餐要吃什麼','還不知道')
-    print(generate_text('打球','djsaijdapsjd'))
-    # print(change_data('TEST_4','3天後天氣如何','陰天','14'))
+    # print(generate_text('客服您好，請問該如何修改密碼','test777'))
+    print(change_data('JLB_seasonal','3天後天氣如何','陰天','seasonal_0'))
     # print(generate_text('晚餐要吃什麼','JLB'))
     # load_from_dir('TEST_5','test1')
     # print(change_data('TEST_5','20天後的天氣如何','陰天','test1'))

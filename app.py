@@ -12,7 +12,9 @@ load_dotenv()
 key_dict={
     'JLB':os.getenv('JLB_OPENAI_API_KEY'),
     'ETY':os.getenv('ETY_OPENAI_API_KEY'),
-    'YZ':os.getenv('YZ_OPENAI_API_KEY')
+    'YZ':os.getenv('YZ_OPENAI_API_KEY'),
+    'PYQ':os.getenv('PYQ_OPENAI_API_KEY'),
+    'SYTY':os.getenv('SYTY_OPENAI_API_KEY'),
 }
 
 app = Flask(__name__)
@@ -58,7 +60,7 @@ def push_prompts():
     
     except TypeError as err :
         print(err) 
-        return jsonify({'status':'fail','message':'Please provide prompts with json type.'}) , 400
+        return jsonify({'status':'fail','message':f'{str(err)}'}) , 400
     
     except Exception as err :
         return jsonify({'status':'fail','message':str(err)}) , 500
@@ -84,7 +86,7 @@ def query():
         data=request.get_json()
 
     except Exception as err : 
-        return jsonify({'status':'fail','message':'Please provide the prompt.'}) , 400
+        return jsonify({'status':'fail','message':str(err)}) , 400
     
     if not data : 
         return jsonify({'status':'fail','message':'Please provide the prompt.'}) , 400
