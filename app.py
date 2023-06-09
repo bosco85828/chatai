@@ -94,8 +94,11 @@ def query():
     try:
         prompt=data['prompt']
         merchant=data['merchant'].upper()
+        
         if merchant in key_dict : 
             os.environ['OPENAI_API_KEY']=key_dict[merchant]
+        else :
+            os.environ['OPENAI_API_KEY']=key_dict['JLB']
             
         anser=generate_text(prompt,merchant)
         print(anser)
