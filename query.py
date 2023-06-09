@@ -17,14 +17,14 @@ embeddings = OpenAIEmbeddings()
 
 def load_from_txt(merchant,prompt,completion):
     
-    try : 
-        _id= int(get_maxid(f"{merchant}_train")) + 1 
+    # try : 
+    #     _id= int(get_maxid(f"{merchant}_train")) + 1 
     
-    except Exception as err :
-        _id=1
-        print({_id:err}) 
+    # except Exception as err :
+    #     _id=1
+    #     print({_id:err}) 
 
-    print('now:{}'.format(_id))
+    # print('now:{}'.format(_id))
     data=prompt + '\n' + completion
 
     original_doc = Document(page_content=data)
