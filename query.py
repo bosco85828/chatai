@@ -39,9 +39,9 @@ def load_from_txt(merchant,prompt,completion):
     
     docsearch.persist()
 
-    try : insert_info(f"{merchant}_train",prompt,completion)
-    except Exception as err : 
-        send_msg({'insert_info':err})
+    # try : insert_info(f"{merchant}_train",prompt,completion)
+    # except Exception as err : 
+    #     send_msg({'insert_info':err})
 
 def load_from_dir_id(merchant,_id):
     # 加载文件夹中的所有txt类型的文件
@@ -152,10 +152,10 @@ def generate_text(prompt,merchant):
     return response['choices'][0]['message']['content']
 
 if __name__ == "__main__":
-    # load_from_dir_id('JLB_seasonal','seasonal')
+    load_from_dir_id('YZ','seasonal')
     # load_from_txt('TEST2','明天早餐要吃什麼','還不知道')
     # print(generate_text('客服您好，請問該如何修改密碼','test777'))
-    print(change_data('JLB_seasonal','3天後天氣如何','陰天','seasonal_0'))
+    # print(change_data('JLB_seasonal','3天後天氣如何','陰天','seasonal_0'))
     # print(generate_text('晚餐要吃什麼','JLB'))
     # load_from_dir('TEST_5','test1')
     # print(change_data('TEST_5','20天後的天氣如何','陰天','test1'))
