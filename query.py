@@ -152,10 +152,11 @@ def generate_text(prompt,merchant):
     return response['choices'][0]['message']['content']
 
 if __name__ == "__main__":
-    load_from_dir_id('YZ','seasonal')
+    load_from_dir_id('JLB','seasonal2')
     # load_from_txt('TEST2','明天早餐要吃什麼','還不知道')
     # print(generate_text('客服您好，請問該如何修改密碼','test777'))
-    # print(change_data('JLB_seasonal','3天後天氣如何','陰天','seasonal_0'))
+    # for i in range(100):
+    #     change_data('JLB','','您好，棋牌游的APP网址： www.bosco.live , H5网页版网址： www.bosco.live 请您复制链接至浏览器打开即可，欢迎体验最新现金娱乐棋牌，谢谢','seasonal1_{}'.format(i))
     # print(generate_text('晚餐要吃什麼','JLB'))
     # load_from_dir('TEST_5','test1')
     # print(change_data('TEST_5','20天後的天氣如何','陰天','test1'))

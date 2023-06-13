@@ -1,9 +1,9 @@
 import os 
 import json
-with open('YZ.txt') as f : 
+with open('JLB.txt') as f : 
     data=f.readlines()
     for i in range(len(data)) :
-        with open(f'YZ-rawdata/{i}.txt','w+') as t : 
+        with open(f'JLB-rawdata/{i}.txt','w+') as t : 
             text=json.loads(data[i])
             t.write('{}\n'.format(text['prompt']))
             t.write('{}\n'.format(text['completion']))

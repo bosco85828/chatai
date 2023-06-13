@@ -2,6 +2,7 @@ import json
 import pymysql
 from dotenv import load_dotenv
 import os 
+import time
 from datetime import datetime , timezone , timedelta
 import requests
 
@@ -59,21 +60,24 @@ def send_msg(msg):
 
 if __name__ == "__main__":
     global yesterday
-    yesterday=(datetime.now(timezone.utc)- timedelta(days=1)).strftime('%Y-%m-%d')
-    # yesterday=datetime.now(timezone.utc).strftime('%Y-%m-%d')
-    result_dict={}    
-    for table in table_name_list : 
-        result=get_total_token(table)
-        result_dict[table]=result
-    
-    str_result_dict=json.dumps(result_dict).replace(',','\n')
-    msg=f"""
-以下為 AIchat 各商戶 {yesterday} 使用總 Token:
-{str_result_dict} """
+    while True : 
+        yesterday=(datetime.now(timezone.utc)- timedelta(days=1)).strftime('%Y-%m-%d')
+        # yesterday=datetime.now(timezone.utc).strftime('%Y-%m-%d')
+        result_dict={}    
+        for table in table_name_list : 
+            result=get_total_token(table)
+            result_dict[table]=result
+        
+        str_result_dict=json.dumps(result_dict).replace(',','\n')
+        msg=f"""
+    以下為 AIchat 各商戶 {yesterday} 使用總 Token:
+    {str_result_dict} """
 
-    print(msg)
-    send_msg(msg)
+        print(msg)
+        send_msg(msg)
+
+        time.sleep(86400)
 
 
-    
+        
 
