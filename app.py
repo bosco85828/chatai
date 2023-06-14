@@ -6,7 +6,9 @@ import os
 from dotenv import load_dotenv
 from datetime import datetime
 from tgbot import send_msg
-from sqldb import insert_info
+from sqldb import insert_info,generate_chatroom_id
+import secrets
+
 load_dotenv()
 
 key_dict={
@@ -84,7 +86,6 @@ def push_prompts():
 def query():
     try:
         data=request.get_json()
-
     except Exception as err : 
         return jsonify({'status':'fail','message':str(err)}) , 400
     
@@ -94,15 +95,26 @@ def query():
     try:
         prompt=data['prompt']
         merchant=data['merchant'].upper()
+        try : chatroom_id=data['chatroom_id']
+        except : 
+            chatroom_id = None 
         
         if merchant in key_dict : 
             os.environ['OPENAI_API_KEY']=key_dict[merchant]
         else :
             os.environ['OPENAI_API_KEY']=key_dict['JLB']
-            
-        anser=generate_text(prompt,merchant)
+        
+        if chatroom_id : 
+            anser=generate_text(prompt,merchant,chatroom_id=chatroom_id)    
+        
+        else : 
+            anser=generate_text(prompt,merchant,chatroom_id=chatroom_id)
+            chatroom_id=generate_chatroom_id(table_name=f"{merchant}_token",length=8)
+
+
+        
         print(anser)
-        return jsonify({'status':'success','message': anser }) , 200
+        return jsonify({'status':'success','message': anser ,'chatroom_id':chatroom_id}) , 200
     
     except KeyError as err :
         return jsonify({'status':'fail','message':f'Please provide the {str(err)}'}) , 400

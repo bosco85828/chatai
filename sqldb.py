@@ -2,6 +2,8 @@ import pymysql
 from dotenv import load_dotenv
 import os 
 from tgbot import send_msg 
+import secrets
+
 load_dotenv()
 SQL_PASSWORD=os.getenv('SQL_PASSWORD')
 SQL_DOMAIN=os.getenv('SQL_DOMAIN')
@@ -59,7 +61,7 @@ def insert_info(table_name,prompt,completion):
     cursor.close()
     connection.close()
 
-def insert_token(table_name,token,prompt,completion):
+def insert_token(table_name,token,prompt,completion,chatroom_id):
     connection = pymysql.connect(
         host=SQL_DOMAIN,
         user='root',
@@ -70,7 +72,7 @@ def insert_token(table_name,token,prompt,completion):
     while True : 
         try : 
             cursor = connection.cursor()
-            sql = f"INSERT INTO {table_name} (prompt,completion,token_count) VALUES ('{prompt}','{completion}',{token})"
+            sql = f"INSERT INTO {table_name} (prompt,completion,token_count,chatroom_id) VALUES ('{prompt}','{completion}',{token},'{chatroom_id}')"
             cursor.execute(sql)
             connection.commit()
             print("資料插入成功！")
@@ -80,7 +82,7 @@ def insert_token(table_name,token,prompt,completion):
             # print(err)
             err_code,err_msg = err.args 
             if str(err_code) == "1146" : 
-                sql_2 = f"CREATE TABLE {table_name} (id INT AUTO_INCREMENT PRIMARY KEY, prompt LONGTEXT , completion LONGTEXT ,   token_count int,  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)"
+                sql_2 = f"CREATE TABLE {table_name} (id INT AUTO_INCREMENT PRIMARY KEY, prompt LONGTEXT , completion LONGTEXT ,   token_count int, chatroom_id varchar ,   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)"
                 cursor.execute(sql_2)
                 connection.commit()
                 print(f"{table_name} 不存在，已創建該表。")
@@ -143,7 +145,7 @@ def get_maxid(table_name):
         connection.close()
 
 
-def search_id(table_name,prompt):
+def search_context(table_name,chatroom_id):
     connection = pymysql.connect(
         host=SQL_DOMAIN,
         user='root',
@@ -156,17 +158,28 @@ def search_id(table_name,prompt):
         # 創建 cursor 對象
         cursor = connection.cursor()
 
-        sql = f"SELECT ID from {table_name} where prompt REGEXP '{prompt}'"
+        sql = f"SELECT prompt,completion from {table_name} where chatroom_id = '{chatroom_id}' order by created_at ASC"
 
         cursor.execute(sql)
         results= cursor.fetchall()
-
+        # print(results)
+        context=[]
         if results : 
             for result in results : 
-                print(result[0])
+                # msg={
+                #     'user':{"role": "user", "content": result[0]},
+                #     'assistant':{"role": "assistant", "content": result[1] },
+                # }
+                context.append({"role": "user", "content": result[0]})
+                context.append({"role": "assistant", "content": result[1]})
+                
+
+                # print('prompt:'+result[0])
+                # print('completion:'+result[1])
         
         else : 
             print("Desn't exits.")
+            return None
     
     except Exception as e :
         print("搜尋資料時發生錯誤：", str(e))
@@ -174,6 +187,8 @@ def search_id(table_name,prompt):
     finally : 
         cursor.close()
         connection.close()
+    
+    return context 
 
 
 def change_info(table_name,prompt,completion,_id):
@@ -219,10 +234,51 @@ def get_total_token(table_name):
         print(result[0])
 
 
+def generate_chatroom_id(length,table_name):
+    connection = pymysql.connect(
+        host=SQL_DOMAIN,
+        user='root',
+        password=SQL_PASSWORD,
+        database='chatai',
+        charset='utf8mb4'
+    )
+    
+    try : 
+        # 創建 cursor 對象
+        cursor = connection.cursor()
+        while True : 
+            chatroom_id = secrets.token_hex(length)  
+            sql = f"SELECT * from {table_name} where chatroom_id = '{chatroom_id}' order by created_at ASC"
+
+            cursor.execute(sql)
+            results= cursor.fetchall()
+            # print(results)
+            
+            if results : 
+                continue 
+            
+            else : 
+                break
+    
+    except Exception as e :
+        print("搜尋資料時發生錯誤：", str(e))
+
+    finally : 
+        cursor.close()
+        connection.close()
+    
+    return chatroom_id
+
 if __name__ == "__main__":
+    # print(search_context("JLB_token",'d40116b1eb2bea69'))
+    # print(search_id("JLB_token",'d40116b1eb29'))
+    # print(insert_token('JLB_token',token=255,prompt='早餐吃什麼',completion='義大利麵',chatroom_id='a3382732d882df65'))
+    # print(insert_token('JLB_token',token=255,prompt='午餐吃什麼',completion='炒飯',chatroom_id='a3382732d882df65'))
+    # print(insert_token('JLB_token',token=255,prompt='晚餐吃什麼',completion='雞胸肉',chatroom_id='a3382732d882df65'))
+    print(generate_chatroom_id(length=8,table_name='JLB_token'))
     # change_info('TEST22_train','後天去哪','JCpark','3')
     # insert_info('Bosco_train','晚餐吃什麼','還沒想好')
 # search_id("JLB_train",'.*是誰.*')
-    # print(get_maxid("TEST20_train"))
+    # print(get_maxid("TEST20_train")) 
     # print(insert_token('test123',333))
     pass
