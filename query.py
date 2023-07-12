@@ -121,8 +121,9 @@ def get_from_db(question,merchant):
         return None
 
 
-def generate_text(prompt,merchant,chatroom_id):
-    contexts=search_context(f"{merchant}_token",chatroom_id)
+def generate_text(prompt,merchant,contexts):
+    # contexts=search_context(f"{merchant}_token",chatroom_id)
+
     if contexts : 
         example=[
         {"role": "system", "content": "你是一个中国的游戏客服专员，请你模仿客服温柔的语气，用简体中文回覆，并且依照我提供的参考资料回答，不知道就说不清楚，不要乱回答，再次强调，不管提问者的语言为何，都请你使用简体中文回覆。 "},
@@ -135,8 +136,8 @@ def generate_text(prompt,merchant,chatroom_id):
     else : 
 
         messages=[
-            {"role": "user", "content": ""},
-            {"role": "assistant", "content": "" },
+            # {"role": "user", "content": ""},
+            # {"role": "assistant", "content": "" },
             {"role": "system", "content": "你是一个中国的游戏客服专员，请你模仿客服温柔的语气，用简体中文回覆，并且依照我提供的参考资料回答，不知道就说不清楚，不要乱回答，再次强调，不管提问者的语言为何，都请你使用简体中文回覆。 "},
             {"role": "user", "content": prompt + "请你参考以下资讯并且使用简体中文回答,{}".format(get_from_db(prompt,merchant)) }
         ]
@@ -163,15 +164,19 @@ def generate_text(prompt,merchant,chatroom_id):
             count+=1 
             continue 
     print('now:' + os.getenv('OPENAI_API_KEY'))
-    try : insert_token(f"{merchant}_token",response['usage']['total_tokens'],prompt,response['choices'][0]['message']['content'],chatroom_id=chatroom_id)
-    except Exception as err : 
-        send_msg({"insert_token":err})
+    # try : insert_token(f"{merchant}_token",response['usage']['total_tokens'],prompt,response['choices'][0]['message']['content'],chatroom_id=None)
+    # except Exception as err : 
+    #     send_msg({"insert_token":err})
 
     return response['choices'][0]['message']['content']
 
 if __name__ == "__main__":
     # load_from_dir_id('JLB','seasonal2')
-    print(generate_text(prompt='可以跟我總結我們剛剛總共說了哪些事情嗎?例如您建議我早午晚餐吃什麼',merchant='JLB',chatroom_id='a3382732d882df65'))
+    print(generate_text(prompt='可以跟我總結我們剛剛總共說了哪些事情嗎?例如您建議我早午晚餐吃什麼',merchant='JLB',contexts=[
+        {"role": "user", "content": '我早餐吃義大利麵'},
+        {"role": "user", "content": '我午餐吃鐵板麵'},
+        {"role": "user", "content": '我晚餐吃蛋包飯'}
+    ]))
     # load_from_txt('TEST2','明天早餐要吃什麼','還不知道')
     # print(generate_text('客服您好，請問該如何修改密碼','test777'))
     # for i in range(100):

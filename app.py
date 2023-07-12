@@ -95,26 +95,20 @@ def query():
     try:
         prompt=data['prompt']
         merchant=data['merchant'].upper()
-        try : chatroom_id=data['chatroom_id']
+        try : contexts=data['contexts']
         except : 
-            chatroom_id = None 
+            contexts = None
+        
         
         if merchant in key_dict : 
             os.environ['OPENAI_API_KEY']=key_dict[merchant]
         else :
             os.environ['OPENAI_API_KEY']=key_dict['JLB']
         
-        if chatroom_id : 
-            anser=generate_text(prompt,merchant,chatroom_id=chatroom_id)    
-        
-        else : 
-            anser=generate_text(prompt,merchant,chatroom_id=chatroom_id)
-            chatroom_id=generate_chatroom_id(table_name=f"{merchant}_token",length=8)
-
-
+        anser=generate_text(prompt,merchant,contexts)    
         
         print(anser)
-        return jsonify({'status':'success','message': anser ,'chatroom_id':chatroom_id}) , 200
+        return jsonify({'status':'success','message': anser }) , 200
     
     except KeyError as err :
         return jsonify({'status':'fail','message':f'Please provide the {str(err)}'}) , 400
