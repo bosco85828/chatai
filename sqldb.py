@@ -101,6 +101,41 @@ def insert_token(table_name,token,prompt,completion,chatroom_id):
     connection.close()
             
 
+def del_tables():
+    connection = pymysql.connect(
+        host=SQL_DOMAIN,
+        user='root',
+        password=SQL_PASSWORD,
+        database='chatai',
+        charset='utf8mb4'
+    )
+    try : 
+        cursor = connection.cursor()
+        sql = f"show tables"
+        cursor.execute(sql)
+        tables=cursor.fetchall()
+        print(tables)
+        if tables : 
+            for table in tables:
+                table_str=table[0]
+                sql=f"delete from {table_str} where DATE(created_at) <= DATE_SUB(CURDATE(),INTERVAL 15 day)"
+                cursor.execute(sql)
+                print(table_str + "刪除成功")
+            connection.commit()
+            print("刪除以下 table 超過 15 天資料:{}".format(tables))
+
+
+    except Exception as err : 
+        
+        
+        error_code,error_msg=err.args
+        print(error_code)
+        print(err)
+        
+
+    finally:
+        cursor.close()
+        connection.close()
 
 
 def get_maxid(table_name):
@@ -275,7 +310,7 @@ if __name__ == "__main__":
     # print(insert_token('JLB_token',token=255,prompt='早餐吃什麼',completion='義大利麵',chatroom_id='a3382732d882df65'))
     # print(insert_token('JLB_token',token=255,prompt='午餐吃什麼',completion='炒飯',chatroom_id='a3382732d882df65'))
     # print(insert_token('JLB_token',token=255,prompt='晚餐吃什麼',completion='雞胸肉',chatroom_id='a3382732d882df65'))
-    print(generate_chatroom_id(length=8,table_name='JLB_token'))
+    # print(generate_chatroom_id(length=8,table_name='JLB_token'))
     # change_info('TEST22_train','後天去哪','JCpark','3')
     # insert_info('Bosco_train','晚餐吃什麼','還沒想好')
 # search_id("JLB_train",'.*是誰.*')
