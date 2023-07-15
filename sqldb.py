@@ -61,7 +61,7 @@ def insert_info(table_name,prompt,completion):
     cursor.close()
     connection.close()
 
-def insert_token(table_name,token,prompt,completion,chatroom_id):
+def insert_token(table_name,token,prompt,completion):
     connection = pymysql.connect(
         host=SQL_DOMAIN,
         user='root',
@@ -72,7 +72,7 @@ def insert_token(table_name,token,prompt,completion,chatroom_id):
     while True : 
         try : 
             cursor = connection.cursor()
-            sql = f"INSERT INTO {table_name} (prompt,completion,token_count,chatroom_id) VALUES ('{prompt}','{completion}',{token},'{chatroom_id}')"
+            sql = f"INSERT INTO {table_name} (prompt,completion,token_count) VALUES ('{prompt}','{completion}',{token})"
             cursor.execute(sql)
             connection.commit()
             print("資料插入成功！")
