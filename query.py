@@ -1,6 +1,7 @@
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
 from langchain.text_splitter import CharacterTextSplitter
+from langchain.embeddings.sentence_transformer import SentenceTransformerEmbeddings
 from langchain import OpenAI,VectorDBQA
 from langchain.document_loaders import DirectoryLoader
 from langchain.chains import RetrievalQA
@@ -11,9 +12,14 @@ import openai
 import sys
 from tgbot import send_msg
 from sqldb import insert_info , get_maxid ,change_info , insert_token ,search_context
+from dotenv import load_dotenv
 
 path=os.getcwd()
-embeddings = OpenAIEmbeddings()
+load_dotenv()
+# embeddings = OpenAIEmbeddings()
+global embeddings
+embeddings=SentenceTransformerEmbeddings(model_name="all-MiniLM-L6-v2")
+
 
 def load_from_txt(merchant,prompt,completion):
     
@@ -29,7 +35,7 @@ def load_from_txt(merchant,prompt,completion):
 
     original_doc = Document(page_content=data)
     # 初始化 openai 的 embeddings 对象
-    embeddings = OpenAIEmbeddings()
+    # embeddings = OpenAIEmbeddings()
     # 持久化数据
     docsearch = Chroma.from_documents(
         documents=[original_doc], 
@@ -54,7 +60,7 @@ def load_from_dir_id(merchant,_id):
     # 切割加载的 document
     split_docs = text_splitter.split_documents(documents)
     # 初始化 openai 的 embeddings 对象
-    embeddings = OpenAIEmbeddings()
+    # embeddings = OpenAIEmbeddings()
     # 持久化数据
     num=[ f"doc_{_id}_{i}" for i in range(len(split_docs))] 
 
@@ -74,7 +80,7 @@ def load_from_dir(merchant):
     # 切割加载的 document
     split_docs = text_splitter.split_documents(documents)
     # 初始化 openai 的 embeddings 对象
-    embeddings = OpenAIEmbeddings()
+    # embeddings = OpenAIEmbeddings()
     # 持久化数据
     docsearch = Chroma.from_documents(split_docs, embeddings,  persist_directory=f"{path}/{merchant}")
     docsearch.persist()
@@ -83,7 +89,7 @@ def change_data(merchant,prompt,completion,_id):
     try : 
         data=prompt + '\n' + completion
         original_doc = Document(page_content=data)
-        embeddings = OpenAIEmbeddings()
+        # embeddings = OpenAIEmbeddings()
         docsearch = Chroma(persist_directory=f"{path}/{merchant}", embedding_function=embeddings)
         
         docsearch.update_document(document_id="doc_{}".format(_id), document=original_doc)
@@ -121,7 +127,7 @@ def get_from_db(question,merchant):
         return None
 
 
-def generate_text(prompt,merchant,contexts):
+def generate_text_old(prompt,merchant,contexts):
     # contexts=search_context(f"{merchant}_token",chatroom_id)
 
     if contexts : 
@@ -164,20 +170,73 @@ def generate_text(prompt,merchant,contexts):
             count+=1 
             continue 
     print('now:' + os.getenv('OPENAI_API_KEY'))
+    # try : insert_token(f"{merchant}_token",response['usage']['total_tokens'],prompt,response['choices'][0]['message']['content'])
+    # except Exception as err : 
+    #     send_msg({"insert_token":err})
+
+    return response['choices'][0]['message']['content']
+
+
+
+def generate_text(prompt,merchant,contexts):
+    openai.api_type = "azure"
+    print(os.getenv("AZURE_OPENAI_ENDPOINT") )
+    openai.api_base = os.getenv("AZURE_OPENAI_ENDPOINT") 
+    openai.api_version = "2023-05-15"
+    print(os.getenv("AZURE_OPENAI_KEY"))
+    openai.api_key = os.getenv("AZURE_OPENAI_KEY")
+    if contexts : 
+        example=[
+        {"role": "system", "content": "你是一个中国的游戏客服专员，请你模仿客服温柔的语气，用简体中文回覆，并且依照我提供的参考资料回答，不知道就说不清楚，不要乱回答，再次强调，不管提问者的语言为何，都请你使用简体中文回覆。 "},
+        {"role": "user", "content": prompt + "请你参考以下资讯并且使用简体中文回答,{}".format(get_from_db(prompt,merchant)) }
+        ]
+        
+        messages = contexts + example 
+        print(messages)
+
+    else : 
+
+        messages=[
+            # {"role": "user", "content": ""},
+            # {"role": "assistant", "content": "" },
+            {"role": "system", "content": "你是一个中国的游戏客服专员，请你模仿客服温柔的语气，用简体中文回覆，并且依照我提供的参考资料回答，不知道就说不清楚，不要乱回答，再次强调，不管提问者的语言为何，都请你使用简体中文回覆。 "},
+            {"role": "user", "content": prompt + "请你参考以下资讯并且使用简体中文回答,{}".format(get_from_db(prompt,merchant)) }
+        ]
+        print(messages)
+    count_=0
+    while count_ < 3 : 
+        try : 
+            response = openai.ChatCompletion.create(
+            engine="prod", # engine = "deployment_name".
+            messages=messages,
+            max_tokens=1024,
+            temperature=0.1,
+            n=1,
+            stop="END",
+            timeout=60,
+            )
+            break 
+        except Exception as err : 
+            send_msg(err) 
+            count_+=1 
+            continue
+
+
     try : insert_token(f"{merchant}_token",response['usage']['total_tokens'],prompt,response['choices'][0]['message']['content'])
     except Exception as err : 
         send_msg({"insert_token":err})
-
+        
     return response['choices'][0]['message']['content']
 
 if __name__ == "__main__":
     # load_from_dir_id('JLB','seasonal2')
-    print(generate_text(prompt='可以跟我總結我們剛剛總共說了哪些事情嗎?例如您建議我早午晚餐吃什麼',merchant='JLB',contexts=[
+    print(generate_text(prompt='可以跟我總結我們剛剛總共說了哪些事情嗎?例如您建議我早午晚餐吃什麼',merchant='TEST_bill',contexts=[
         {"role": "user", "content": '我早餐吃義大利麵'},
         {"role": "user", "content": '我午餐吃鐵板麵'},
         {"role": "user", "content": '我晚餐吃蛋包飯'}
     ]))
-    # load_from_txt('TEST2','明天早餐要吃什麼','還不知道')
+
+    # load_from_txt('TEST_bill','明天早餐要吃什麼','還不知道')
     # print(generate_text('客服您好，請問該如何修改密碼','test777'))
     # for i in range(100):
     #     change_data('JLB','','您好，棋牌游的APP网址： www.bosco.live , H5网页版网址： www.bosco.live 请您复制链接至浏览器打开即可，欢迎体验最新现金娱乐棋牌，谢谢','seasonal1_{}'.format(i))
