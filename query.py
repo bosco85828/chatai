@@ -139,7 +139,7 @@ def generate_text(prompt,merchant,contexts):
             # {"role": "user", "content": ""},
             # {"role": "assistant", "content": "" },
             {"role": "system", "content": "你是一个中国的游戏客服专员，请你模仿客服温柔的语气，用简体中文回覆，并且依照我提供的参考资料回答，不知道就说不清楚，不要乱回答，再次强调，不管提问者的语言为何，都请你使用简体中文回覆。 "},
-            {"role": "user", "content": prompt + "请你参考以下资讯并且使用简体中文回答,{}".format(get_from_db(prompt,merchant)) }
+            {"role": "user", "content": prompt + "请你参考以下资讯并且使用简体中文回答" }
         ]
         print(messages)
     # print(messages)
